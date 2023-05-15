@@ -1,0 +1,131 @@
+---
+title: "Lab 03"
+author: "Mehreen Junaid"
+date: ""
+editor_options: 
+  chunk_output_type: console
+output:
+  pdf_document: default
+---
+
+# Packages
+```{r load-packages, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(sf)
+``` 
+
+# Data
+```{r load-data, message = FALSE}
+fl_votes <- st_read("data/fl_votes.shp", quiet = TRUE)
+fl_votes %>%
+  slice(1:6)
+```
+# Exercise 1
+1.	Modify the add-winner code chunk to mutate() a new variable winner20 describing who won each Florida county in the 2020 Presidential election. The function if_else will be helpful. if_else(condition, true, false) assigns true if the first condition is TRUE and assigns false if the first condition is FALSE. 
+
+Solution:
+```{r add-winner}
+# Calculate vote shares and determine winner
+fl_votes <- fl_votes %>%
+  mutate(share16_rep = rep16 / (rep16 + dem16),
+         share16_dem = dem16 / (rep16 + dem16),
+         share20_rep = rep20 / (rep20 + dem20),
+         share20_dem = dem20 / (rep20 + dem20),
+         winner20 = if_else(rep20 > dem20, "Republican", "Democratic"))
+
+```
+# Exercise 2
+2.	Modify the fl-plot-1 code chunk to create a plot of Florida’s 2020 U.S. Presidential election results by county, with counties colored by winner20. Use informative colors with the scale_fill_manual() function. The colors “#DE0100” and “#0015BC” look good for Republicans and Democrats, respectively, but the choice is yours. 
+
+Solution:
+```{r fl-plot-1}
+# Plotting
+ggplot() +
+  geom_sf(data = fl_votes,
+          aes(fill = winner20),
+          color = NA) +
+  scale_fill_manual(values = c("#DE0100", "#0015BC"),
+                    name = "Winner") +
+  labs(title = "Florida County-Level Election Results 2020")
+
+
+```
+
+# Exercise 3
+3.	Create two new variables using mutate() in the fl-props code chunk. prop_rep16 is the Republican share of the two-party vote in the 2016 Presidential election and prop_rep20 is the Republican share of the two-party vote in the 2020 Presidential election. 
+
+Solution:
+```{r fl-props}
+# Calculate Republican share of two-party vote
+fl_votes <- fl_votes %>%
+  mutate(prop_rep16 = rep16 / (rep16 + dem16),
+         prop_rep20 = rep20 / (rep20 + dem20))
+
+```
+# Exercise 4
+4.	Modify the fl-plot-2 code chunk to create a plot of the 2020 U.S. Presidential results by county, with counties colored according to the proportion of the two-party vote cast for the Republican candidate. The scale_fill_gradient() function will be helpful for effective coloring (but there are other possibilities). 
+
+Solution:
+```{r fl-plot-2}
+# Plotting
+ggplot() +
+  geom_sf(data = fl_votes,
+          aes(fill = prop_rep20),
+          color = NA) +
+  scale_fill_gradient(low = "#0015BC", high = "#DE0100",
+                      name = "Republican Share") +
+  labs(title = "Florida County-Level Election Results 2020")
+
+```
+
+# Exercise 5
+5.	Create a new variable diff_rep using mutate() in the fl-change code chunk, representing the change in the two-party vote share between 2016 and 2020 (prop_rep20 - prop_rep16).
+
+Solution:
+```{r fl-change}
+# Calculate change in two-party vote share
+fl_votes <- fl_votes %>%
+  mutate(diff_rep = prop_rep20 - prop_rep16)
+
+```
+# Exercise 6
+6.	Modify the fl-plot-3 code chunk to plot the change in Republican vote share by county between 2016 and 2020. The scale_fill_gradient2() function will be helpful for effective coloring. 
+
+Solution:
+```{r fl-plot-3}
+# Plotting
+ggplot() +
+  geom_sf(data = fl_votes,
+          aes(fill = diff_rep),
+          color = NA) +
+  scale_fill_gradient2(low = "#0015BC", mid = "white", high = "#DE0100",
+                      midpoint = 0,
+                      name = "Change in Republican Vote Share") +
+  labs(title = "Florida County-Level Change in Republican Vote Share (2016-2020)")
+
+```
+
+# Exercise 7
+7.	What do the visualizations you developed tell you about the 2016 and 2020 Presidential elections in Florida? What are the limitations of these visualizations?
+
+Solution:
+The visualizations developed provide insights into the 2016 and 2020 Presidential elections in Florida. Here's what can be inferred from the visualizations:
+
+Plot of Florida's 2020 U.S. Presidential election results by county, colored by winner20: This plot allows us to observe the distribution of the election results across different counties in Florida. It provides a visual representation of which party (Republican or Democratic) won each county in the 2020 Presidential election. The color scheme chosen helped distinguish between the two parties.This shows that the majority of counties are covered in blue, indicating Republican wins, with some counties colored in red, representing Democratic wins. This suggests that the Republican candidate won in many counties in Florida, while the Democratic candidate won in a smaller number of counties. 
+
+Plot of the 2020 U.S. Presidential election results by county, colored by the proportion of the two-party vote for the Republican candidate (prop_rep20): This plot allows us to visualize the variation in the Republican vote share across counties in Florida. The gradient color scale used (using dark blue to dark red) helps in understanding the range and intensity of the Republican vote share.The plot has more red than blue; thus,  suggests that the Republican candidate had a stronger performance or higher vote share in many counties across Florida during the 2020 Presidential election.
+
+Plot of the change in Republican vote share by county between 2016 and 2020, colored by diff_rep: This plot shows the change in the Republican vote share between the two elections. It highlights the counties where there was a significant increase or decrease in the Republican vote share. The diverging color scale used (e.g., from dark blue to white to dark red) helps differentiate positive and negative changes in the Republican vote share.The plot suggests that in most counties, there was either a decrease in the Republican vote share or a smaller increase compared to the Democratic vote share between the two elections. The light blue and purple shades likely represent counties where the Democratic vote share increased or remained relatively high, while the light red and dark red spots indicate counties where the Republican vote share either increased significantly or remained strong.
+
+Limitations of these visualizations:
+
+-These visualizations focus solely on the two major parties (Republican and Democratic) and their vote shares. They do not account for third-party candidates or independent candidates.
+
+-The visualizations are based on county-level data, which may not capture the diversity within counties. Within a county, there can be variations in voting patterns across different regions or demographic groups that are not accounted for.
+
+-The visualizations do not provide information about the total voter turnout or the number of eligible voters in each county. Thus, they do not convey the overall level of political engagement or voter participation.
+
+-The visualizations are static snapshots and do not capture temporal patterns or changes over time. They represent a single election year and do not provide insights into long-term trends or shifts in voting patterns.
+
+-It is important to interpret these visualizations in conjunction with other data sources and consider the limitations to gain a more comprehensive understanding of the 2016 and 2020 Presidential elections in Florida.
+
